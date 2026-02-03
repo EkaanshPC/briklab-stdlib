@@ -56,7 +56,7 @@
 // -------------------------------------------------------------------------------------------------------
 //#region Defination of custom JSTC handler
 import { warn } from "node:console";
-import JSTC from "../jstc";
+import JSTC from "../jstc/index.js";
 JSTC.addCustomHandler("NodeJS Process", (p: any) => {
   return (
     p &&
