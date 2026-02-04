@@ -338,20 +338,20 @@ class UtilitiesClass {
     this.addTag("error", {
       tag: "ERROR",
       showErrorInTag: false,
-      paddingLeft: 1,
-      paddingRight: 1,
+      paddingLeft: 0,
+      paddingRight: 0,
     });
     this.addTag("warning", {
       tag: "WARNING",
       showErrorInTag: true,
-      paddingLeft: 1,
-      paddingRight: 1,
+      paddingLeft: 0,
+      paddingRight: 0,
     });
     this.addTag("info", {
       tag: "INFO",
       showErrorInTag: true,
-      paddingLeft: 1,
-      paddingRight: 1,
+      paddingLeft: 0,
+      paddingRight: 0,
     });
 
     this.setTagStyle(
@@ -414,21 +414,24 @@ class UtilitiesClass {
     return this;
   }
 
-  log(tagName: string, message: string) {
-    if (!JSTC.for([tagName, message]).check(["string", "string"])) {
+  log(tagName: string, ...messages: any[]) {
+    if (!JSTC.for([tagName]).check(["string"])) {
       console.warn(`[UtilitiesClass.log] @briklab/lib/cli-john: Invalid Arguments!
-        Hint: The first argument must be a string and the second argument must be a string
-        Using String(argument1) and String(argument2) as fallback`);
+        Hint: The first argument must be a string
+        Using String(argument1) as fallback`);
       tagName = String(tagName);
-      message = String(message);
     }
+
+    if (!messages || messages.length === 0) messages = [""];
+
     const tag = this.tags[tagName];
     if (!tag) {
       console.warn(`[UtilitiesClass.log] @briklab/lib/cli-john: Tag "${tagName}" does not exist! 
         Hint: Use a valid tag that you have defined or use "error"|"warn"|"info"`);
-      console.log(message);
+      console.log(...messages);
       return;
     }
+
     const inlineStyle = this.styleSheet.get(tag.styleName);
     const style = inlineStyle?.text ?? "";
     const leftPad = " ".repeat(tag.paddingLeft);
@@ -444,47 +447,34 @@ class UtilitiesClass {
       const reset = Color.RESET;
 
       if (tag.showErrorInTag) {
-        console.log("[" + ansi + `${leftPad}${tag.tag}${rightPad}` + reset + "]: " + message);
+        console.log("[" + ansi + leftPad + tag.tag + rightPad + reset + "]:", ...messages);
       } else {
-        console.log(ansi + `[${leftPad}${tag.tag}${rightPad}]` + reset + `: ${message}`);
+        console.log(ansi + "[" + leftPad + tag.tag + rightPad + "]" + reset + ":", ...messages);
       }
     } else {
       if (tag.showErrorInTag) {
-        console.log(`[%c${leftPad}${tag.tag}${rightPad}%c]: ${message}`, style);
+        console.log(`[%c${leftPad}${tag.tag}${rightPad}%c]:`, style, ...messages);
       } else {
-        console.log(`%c[${leftPad}${tag.tag}${rightPad}]%c: ${message}`, style);
+        console.log(`%c[${leftPad}${tag.tag}${rightPad}]%c:`, style, ...messages);
       }
     }
   }
 
-  error(msg: string) {
-    if (typeof msg !== "string") {
-      console.warn(`[UtilitiesClass.error] Invalid First Argument!
-      Hint: The first argument must be a string.
-      Using String(firstArgument) as fallback`);
-      msg = String(msg);
-    }
-    this.log("error", msg);
+  error(...msg: any[]) {
+    if (!msg || msg.length === 0) msg = [""];
+    this.log("error", ...msg);
     return this;
   }
-  warning(msg: string) {
-    if (typeof msg !== "string") {
-      console.warn(`[UtilitiesClass.warning] Invalid First Argument!
-      Hint: The first argument must be a string.
-      Using String(firstArgument) as fallback`);
-      msg = String(msg);
-    }
-    this.log("warning", msg);
+
+  warning(...msg: any[]) {
+    if (!msg || msg.length === 0) msg = [""];
+    this.log("warning", ...msg);
     return this;
   }
-  info(msg: string) {
-    if (typeof msg !== "string") {
-      console.warn(`[UtilitiesClass.info] Invalid First Argument!
-      Hint: The first argument must be a string.
-      Using String(firstArgument) as fallback`);
-      msg = String(msg);
-    }
-    this.log("info", msg);
+
+  info(...msg: any[]) {
+    if (!msg || msg.length === 0) msg = [""];
+    this.log("info", ...msg);
     return this;
   }
 }
