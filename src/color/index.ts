@@ -1,0 +1,166 @@
+/**
+ * Easy way to use colors
+ */
+
+type ColorInput =
+  | string
+  | { r: number; g: number; b: number; a?: number }
+  | { h: number; s: number; l: number; a?: number };
+
+const NAMED_COLORS: Record<string, string> = {
+  red: "#ff0000",
+  blue: "#0000ff",
+  green: "#00ff00",
+  yellow: "#ffff00",
+  orange: "#ffa500",
+  black: "#000000",
+  white: "#ffffff",
+  gray: "#808080",
+};
+
+export default class Color {
+  private r: number = 0;
+  private g: number = 0;
+  private b: number = 0;
+  private a: number = 1;
+
+  constructor(input: ColorInput) {
+    if (typeof input === "string") {
+      this.#parseString(input);
+    } else if ("r" in input && "g" in input && "b" in input) {
+      this.r = this.#clamp(input.r);
+      this.g = this.#clamp(input.g);
+      this.b = this.#clamp(input.b);
+      this.a = input.a ?? 1;
+    } else if ("h" in input && "s" in input && "l" in input) {
+      const { r, g, b } = this.#hslToRgb(input.h, input.s, input.l);
+      this.r = r;
+      this.g = g;
+      this.b = b;
+      this.a = input.a ?? 1;
+    } else {
+      console.warn(`[Color.constructor] Invalid first argument!
+        Hint: The first argument must be a valid color array
+        Using black as fallback.`);
+    }
+  }
+
+  // -----------------------
+  // Public Methods
+  // -----------------------
+  hex(): string {
+    return `#${this.#toHex(this.r)}${this.#toHex(this.g)}${this.#toHex(this.b)}`;
+  }
+
+  rgb(): string {
+    return `rgb(${this.r}, ${this.g}, ${this.b})`;
+  }
+
+  rgba(): string {
+    return `rgba(${this.r}, ${this.g}, ${this.b}, ${this.a})`;
+  }
+
+  hsl(): string {
+    const { h, s, l } = this.#rgbToHsl(this.r, this.g, this.b);
+    return `hsl(${h}, ${s}%, ${l}%)`;
+  }
+
+  hsla(): string {
+    const { h, s, l } = this.#rgbToHsl(this.r, this.g, this.b);
+    return `hsla(${h}, ${s}%, ${l}%, ${this.a})`;
+  }
+
+  css(): string {
+    return this.a === 1 ? this.hex() : this.rgba();
+  }
+
+  #clamp(value: number): number {
+    return Math.max(0, Math.min(255, value));
+  }
+
+  #toHex(value: number): string {
+    return value.toString(16).padStart(2, "0");
+  }
+
+  #parseString(str: string) {
+    str = str.trim().toLowerCase();
+
+    if (NAMED_COLORS[str]) {
+      str = NAMED_COLORS[str];
+    }
+
+    if (str.startsWith("#")) {
+      const hex = str.slice(1);
+      if (hex.length === 3) {
+        this.r = parseInt(hex[0] + hex[0], 16);
+        this.g = parseInt(hex[1] + hex[1], 16);
+        this.b = parseInt(hex[2] + hex[2], 16);
+      } else if (hex.length === 6) {
+        this.r = parseInt(hex.slice(0, 2), 16);
+        this.g = parseInt(hex.slice(2, 4), 16);
+        this.b = parseInt(hex.slice(4, 6), 16);
+      } else {
+        console.warn(`[Color class] @briklab/lib/color: Invalid hex! 
+            Hint: You must pass a valid hex color string!
+            Using black as fallback.`);
+      }
+    } else if (str.startsWith("rgb")) {
+      const vals = str.match(/[\d.]+/g)?.map(Number);
+      if (vals && vals.length >= 3) {
+        [this.r, this.g, this.b] = vals;
+        this.a = vals[3] ?? 1;
+      }
+    } else if (str.startsWith("hsl")) {
+      const vals = str.match(/[\d.]+/g)?.map(Number);
+      if (vals && vals.length >= 3) {
+        const { r, g, b } = this.#hslToRgb(vals[0], vals[1], vals[2]);
+        this.r = r;
+        this.g = g;
+        this.b = b;
+        this.a = vals[3] ?? 1;
+      }
+    } else {
+      console.warn(`[Color class] @briklab/lib/color: Unknown color string "${str}"! 
+        Hint: The argument must be a valid color string!
+        Using black as fallback.`);
+    }
+  }
+
+  #hslToRgb(h: number, s: number, l: number) {
+    s /= 100;
+    l /= 100;
+    const k = (n: number) => (n + h / 30) % 12;
+    const a = s * Math.min(l, 1 - l);
+    const f = (n: number) => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+    return { r: Math.round(f(0) * 255), g: Math.round(f(8) * 255), b: Math.round(f(4) * 255) };
+  }
+
+  #rgbToHsl(r: number, g: number, b: number) {
+    r /= 255;
+    g /= 255;
+    b /= 255;
+    const max = Math.max(r, g, b),
+      min = Math.min(r, g, b);
+    let h = 0,
+      s = 0,
+      l = (max + min) / 2;
+
+    if (max !== min) {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r:
+          h = (g - b) / d + (g < b ? 6 : 0);
+          break;
+        case g:
+          h = (b - r) / d + 2;
+          break;
+        case b:
+          h = (r - g) / d + 4;
+          break;
+      }
+      h *= 60;
+    }
+    return { h: Math.round(h), s: Math.round(s * 100), l: Math.round(l * 100) };
+  }
+}

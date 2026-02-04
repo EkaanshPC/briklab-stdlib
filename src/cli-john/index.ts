@@ -55,8 +55,8 @@
 
 // -------------------------------------------------------------------------------------------------------
 //#region Defination of custom JSTC handler
-import { warn } from "node:console";
 import JSTC from "../jstc/index.js";
+import InlineStyle, { StyleSheet } from "../stylesheet/index.js";
 JSTC.addCustomHandler("NodeJS Process", (p: any) => {
   return (
     p &&
@@ -121,26 +121,30 @@ export class CLI {
     else this.#commands.push(c);
     return c;
   }
-  #onCmdFunctions: Function[]= []
-  on(event:CLI.ValidEvent,func:Function){
-    if(!JSTC.for([event,func]).check(["string","function"]))throw this.#createErr(
-      "Arguments in CLI.on are invalid!",
-      "The first argument must be a string, and the second argument must be a function."
-    )
-    switch(event.toLowerCase()){
+  #onCmdFunctions: Function[] = [];
+  on(event: CLI.ValidEvent, func: Function) {
+    if (!JSTC.for([event, func]).check(["string", "function"]))
+      throw this.#createErr(
+        "Arguments in CLI.on are invalid!",
+        "The first argument must be a string, and the second argument must be a function.",
+      );
+    switch (event.toLowerCase()) {
       case "command":
-      this.#onCmdFunctions.push(func)
-      break
-      default: 
-      this.#createWarn("Invalid event in CLI.on","Please enter a valid event from CLI.ValidEvents (array)");
+        this.#onCmdFunctions.push(func);
+        break;
+      default:
+        this.#createWarn(
+          "Invalid event in CLI.on",
+          "Please enter a valid event from CLI.ValidEvents (array)",
+        );
     }
   }
   run() {
     let { options, commandArgs, command, failed } = this.#figureOutCommand();
     if (failed) return;
-   for(let i = 0; i< this.#onCmdFunctions.length;i++){
-    this.#onCmdFunctions[i]({options,commandArgs,command})
-   }
+    for (let i = 0; i < this.#onCmdFunctions.length; i++) {
+      this.#onCmdFunctions[i]({ options, commandArgs, command });
+    }
   }
   #figureOutCommand() {
     // for eg. we have nodepath filepath cli build
@@ -150,7 +154,7 @@ export class CLI {
     let command = this.#commands.find((a) => a.name === commands[0]); // find the command
     if (!command)
       return { options: [], command: "", commandArgs: [], failed: true }; // command not found?
-    let commandArgs: string[]  = [];
+    let commandArgs: string[] = [];
     const args = commands.slice(1);
     for (let i: number = 0; i < args.length; i++) {
       let arg = args[i];
@@ -158,7 +162,7 @@ export class CLI {
       commandArgs.push(arg);
     }
     let leftover = args.slice(commandArgs.length); // args = [1,2,3]; command args = [1,2] command args length is 2, therefore .slice(2) results in [3]
-    let options: { option: string; arguments: string[] }[]  = [];
+    let options: { option: string; arguments: string[] }[] = [];
 
     for (let i = 0; i < leftover.length; i++) {
       const opt = leftover[i];
@@ -217,10 +221,8 @@ interface ArrayObj {
   [key: string]: Function[];
 }
 export namespace CLI {
-  export const ValidEvents = [
-    "command"
-  ] as const;
-  export type ValidEvent = typeof ValidEvents[number]
+  export const ValidEvents = ["command"] as const;
+  export type ValidEvent = (typeof ValidEvents)[number];
   /**
    * ## CLI.Command
    * A command in a CLI Command
@@ -304,14 +306,172 @@ export namespace CLI.Command {
 }
 //#endregion
 // -------------------------------------------------------------------------------------------------------
-//#region CLI Utilities 
+//#region CLI Utilities
+JSTC.addCustomHandler("Utilities Tag Config", (p: any) => {
+  return (
+    p &&
+    typeof p === "object" &&
+    typeof p.tag === "string" &&
+    typeof p.showErrorInTag === "boolean" &&
+    typeof p.paddingLeft === "number" &&
+    typeof p.paddingRight === "number" &&
+    (typeof p.styleName === "string" || p.styleName === undefined)
+  );
+});
 
-/**
- * Will be implemented in v1.2.0
- * @experimental v1.2.0
- */
-export namespace Utilities {
+class UtilitiesClass {
+  styleSheet = new StyleSheet();
+
+  tags: Record<
+    string,
+    {
+      tag: string;
+      showErrorInTag: boolean;
+      paddingLeft: number;
+      paddingRight: number;
+      styleName: string;
+    }
+  > = {};
+
+  constructor() {
+    this.addTag("error", {
+      tag: "ERROR",
+      showErrorInTag: false,
+      paddingLeft: 1,
+      paddingRight: 1,
+    });
+    this.addTag("warning", {
+      tag: "WARNING",
+      showErrorInTag: true,
+      paddingLeft: 1,
+      paddingRight: 1,
+    });
+    this.addTag("info", {
+      tag: "INFO",
+      showErrorInTag: true,
+      paddingLeft: 1,
+      paddingRight: 1,
+    });
+
+    this.setTagStyle(
+      "error",
+      new InlineStyle({ color: "red", fontWeight: "bold" }),
+    );
+    this.setTagStyle(
+      "warning",
+      new InlineStyle({ color: "orange", fontWeight: "bold" }),
+    );
+    this.setTagStyle("info", new InlineStyle({ color: "blue" }));
+  }
+
+  /** Add a new tag */
+  addTag(name: string, config: Partial<(typeof this.tags)["error"]> = {}) {
+    if (!JSTC.for([name, config]).check(["string", "object"])) {
+      console.warn(`[UtilitiesClass.addTag] @briklab/lib/cli-john: Invalid Arguments!
+        Hint: The first argument must be a string, and the second argument must be a object.
+        Using String(argument1) and {} as fallback.`);
+      name = String(name);
+      config = {};
+    }
+    const fullConfig = {
+      tag: name.toUpperCase(),
+      showErrorInTag: false,
+      paddingLeft: 0,
+      paddingRight: 0,
+      styleName: "",
+      ...config,
+    };
+
+    if (!JSTC.for([fullConfig]).check(["Utilities Tag Config"])) {
+      console.warn(`[UtilitiesClass.addTag] @briklab/lib/cli-john: Invalid tag config passed for "${name}"
+        Hint: The config must be in format {tag?: string, showErrorInTag?:boolean, paddingLeft?:number, paddingRight?:number, styleName?:string}`);
+      console.warn(fullConfig);
+      return this;
+    }
+
+    this.tags[name] = fullConfig;
+    return this;
+  }
+
+  /** Set style for a tag */
+  setTagStyle(tagName: string, style: InlineStyle) {
+    if (typeof tagName !== "string" || !(style instanceof InlineStyle)) {
+      console.warn(`[UtilitiesClass.setTagStyle] @briklab/lib/cli-john: Invalid arguments!
+        Hint: The first argument must be a string and the second argument must be a instance of InlineStyle
+        Using String(firstArgument) and new InlineStyle({}) as fallback`);
+      tagName = String(tagName);
+      style = new InlineStyle({});
+    }
+    if (!this.tags[tagName]) {
+      console.warn(`[UtilitiesClass.setTagStyle] @briklab/lib/cli-john: Tag "${tagName}" does not exist! 
+        Hint: Use a valid tag that you have defined or use "error"|"warn"|"info"`);
+      return this;
+    }
+    const styleName = `${tagName} Tag Color`;
+    this.styleSheet.set(styleName, style);
+    this.tags[tagName].styleName = styleName;
+    return this;
+  }
+
+  log(tagName: string, message: string) {
+    if (!JSTC.for([tagName, message]).check(["string", "string"])) {
+      console.warn(`[UtilitiesClass.log] @briklab/lib/cli-john: Invalid Arguments!
+        Hint: The first argument must be a string and the second argument must be a string
+        Using String(argument1) and String(argument2) as fallback`);
+      tagName = String(tagName);
+      message = String(message);
+    }
+    const tag = this.tags[tagName];
+    if (!tag) {
+      console.warn(`[UtilitiesClass.log] @briklab/lib/cli-john: Tag "${tagName}" does not exist! 
+        Hint: Use a valid tag that you have defined or use "error"|"warn"|"info"`);
+      console.log(message);
+      return;
+    }
+    const style = this.styleSheet.get(tag.styleName)?.text ?? "";
+    const leftPad = " ".repeat(tag.paddingLeft);
+    const rightPad = " ".repeat(tag.paddingRight);
+
+    if (tag.showErrorInTag) {
+      console.log(`[%c${leftPad}${tag.tag}${rightPad}%c]: ${message}`, style);
+    } else {
+      console.log(`%c[${leftPad}${tag.tag}${rightPad}]%c: ${message}`, style);
+    }
+  }
+
+  error(msg: string) {
+    if (typeof msg !== "string") {
+      console.warn(`[UtilitiesClass.error] Invalid First Argument!
+      Hint: The first argument must be a string.
+      Using String(firstArgument) as fallback`);
+      msg = String(msg);
+    }
+    this.log("error", msg);
+    return this;
+  }
+  warning(msg: string) {
+    if (typeof msg !== "string") {
+      console.warn(`[UtilitiesClass.warning] Invalid First Argument!
+      Hint: The first argument must be a string.
+      Using String(firstArgument) as fallback`);
+      msg = String(msg);
+    }
+    this.log("warning", msg);
+    return this;
+  }
+  info(msg: string) {
+    if (typeof msg !== "string") {
+      console.warn(`[UtilitiesClass.info] Invalid First Argument!
+      Hint: The first argument must be a string.
+      Using String(firstArgument) as fallback`);
+      msg = String(msg);
+    }
+    this.log("info", msg);
+    return this;
+  }
 }
+
+export const Utilities = new UtilitiesClass();
 //#endregion
 // -------------------------------------------------------------------------------------------------------
 //#region TODO

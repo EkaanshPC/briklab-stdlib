@@ -9,20 +9,26 @@
     "ObiloxYT"
   ],
   "publishConfig": {
-    "access":"public"
+    "access": "public"
   },
   "markdown": "github",
   "type": "module",
   "scripts": {
-	"build":"tsc",
-  "prepublishOnly": "pnpm run build"
+    "build": "tsc",
+    "prepublishOnly": "pnpm run build"
   },
   "description": "@briklab/lib is the core library for all @briklab packages.",
   "homepage": "https://github.com/EkaanshPC/briklab-stdlib",
   "keywords": [
     "helpers",
     "typescript",
-    "types"
+    "types",
+    "cli",
+    "stylesheet",
+    "javascript",
+    "js",
+    "command",
+    "style"
   ],
   "license": "Apache-2.0",
   "main": "dist/index.js",
@@ -33,23 +39,35 @@
   "repository": {
     "url": "https://github.com/EkaanshPC/briklab-stdlib"
   },
-  "version": "1.0.2",
+  "version": "1.0.9",
   "devDependencies": {
+    "@types/cssom": "^0.4.3",
     "@types/node": "^25.1.0",
     "typescript": "^5.9.3"
   },
   "exports": {
-	".": {
-		"import":"./dist/index.js",
-		"types":"./dist/index.d.ts"
-	},
-	"./cli-john": {
-		"import":"./dist/cli-john/index.js",
-		"types":"./dist/cli-john/index.d.ts"
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./cli-john": {
+      "import": "./dist/cli-john/index.js",
+      "types": "./dist/cli-john/index.d.ts"
+    },
+    "./jstc": {
+      "import": "./dist/jstc/index.js",
+      "types": "./dist/jstc/index.d.ts"
+    },
+    "./stylesheet": {
+      "import":"./dist/stylesheet/index.js",
+      "types":"./dist/stylesheet/index.d.ts"
+    },
+    "./color": {
+      "import": "./dist/color/index.js",
+      "types":"./dist/color/index.d.ts"
+    }
   },
-  "./jstc": {
-    "import":"./dist/jstc/index.js",
-    "types":"./dist/jstc/index.d.ts"
-  }
+  "dependencies": {
+    "cssom": "^0.5.0"
   }
 }

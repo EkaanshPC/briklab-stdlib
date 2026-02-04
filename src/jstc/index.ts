@@ -1,4 +1,5 @@
 /**
+ * # JSTC
  * @packageDocumentation
  * Runtime JS Type Checker
  * @module JSTC
@@ -31,8 +32,20 @@ export class JSTypeChecker {
    * @param {unknown[]} args
    */
   for(args: unknown[]) {
+    if(!Array.isArray(args)){
+      console.warn(`[JSTC.for] @briklab/lib/jstc: Invalid first argument!
+        Hint: The first argument must be a array.
+        Using [givenValue] as fallback`)
+        args = [args]
+    }
     return {
       check: (types: JSTypeOrArray[]): boolean => {
+        if(!Array.isArray(types)){
+          console.warn(`[JSTC.for().check] @briklab/lib/jstc: Invalid first argument!
+            Hint: The first argument must be a valid array!
+            Using [givenValue] as fallback`)
+            types = [types]
+        }
         if (args.length < types.length) return false;
         for (let i = 0; i < types.length; i++) {
           const value = args[i];
@@ -70,6 +83,13 @@ export class JSTypeChecker {
   }
 
   addCustomHandler(name: string, handler: (value: unknown) => boolean): void {
+    if(!(typeof name === "string" && typeof handler === "function")){
+      console.warn(`[JSTC.addCustomHandler] @briklab/lib/jstc: Invalid Arguments!
+        Hint: The first argument must be a string, and the second argument must be a function
+        Using String(argument1) and ()=>false as fallbacks`)
+        name = String(name)
+        handler = () => false
+    }
     this.#__CustomHandler[name] = handler;
   }
 }

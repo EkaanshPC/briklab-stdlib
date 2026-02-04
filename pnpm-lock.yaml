@@ -7,7 +7,14 @@ settings:
 importers:
 
   .:
+    dependencies:
+      cssom:
+        specifier: ^0.5.0
+        version: 0.5.0
     devDependencies:
+      '@types/cssom':
+        specifier: ^0.4.3
+        version: 0.4.3
       '@types/node':
         specifier: ^25.1.0
         version: 25.1.0
@@ -17,8 +24,14 @@ importers:
 
 packages:
 
+  '@types/cssom@0.4.3':
+    resolution: {integrity: sha512-cThQxtgHC2wyXp2gnDd4lh6EJfpmUADIJX613HcmFVwELw/gQya8Ok7EBkJ3g2z9G2N0NNZywXvjZ4A8dPWYFw==}
+
   '@types/node@25.1.0':
     resolution: {integrity: sha512-t7frlewr6+cbx+9Ohpl0NOTKXZNV9xHRmNOvql47BFJKcEG1CxtxlPEEe+gR9uhVWM4DwhnvTF110mIL4yP9RA==}
+
+  cssom@0.5.0:
+    resolution: {integrity: sha512-iKuQcq+NdHqlAcwUY0o/HL69XQrUaQdMjmStJ8JFmUaiiQErlhrmuigkg/CU4E2J0IyUKUrMAgl36TvN67MqTw==}
 
   typescript@5.9.3:
     resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
@@ -30,9 +43,13 @@ packages:
 
 snapshots:
 
+  '@types/cssom@0.4.3': {}
+
   '@types/node@25.1.0':
     dependencies:
       undici-types: 7.16.0
+
+  cssom@0.5.0: {}
 
   typescript@5.9.3: {}
 
