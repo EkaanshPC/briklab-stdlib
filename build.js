@@ -13,8 +13,8 @@ const packages = fs.readdirSync(distDir).filter(f =>
       await build({
         entryPoints: [path.join(distDir, pkg, "index.js")],
         outfile: path.join(distDir, pkg, "index.js"), 
-        bundle: true,
         minify: true,
+        bundle:false,
         platform: "node",
         format: "esm",
         target: ["node20"],
