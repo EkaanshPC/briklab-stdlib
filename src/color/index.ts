@@ -2,7 +2,9 @@
  * Easy way to use colors
  */
 
-import { warner } from "../warner/index.js";
+import { createWarner } from "../warner/index.js";
+
+const colorWarner = createWarner("@briklab/lib/color");
 
 type ColorInput =
   | string
@@ -41,7 +43,7 @@ export default class Color {
       this.b = b;
       this.a = input.a ?? 1;
     } else {
-      warner.warn({message:`[Color.constructor] Invalid first argument!
+      colorWarner.warn({message:`[Color.constructor] Invalid first argument!
         Hint: The first argument must be a valid color array
         Using black as fallback.`});
     }
@@ -160,7 +162,7 @@ export default class Color {
         this.g = parseInt(hex.slice(2, 4), 16);
         this.b = parseInt(hex.slice(4, 6), 16);
       } else {
-        warner.warn({message:`[Color class] @briklab/lib/color: Invalid hex! 
+        colorWarner.warn({message:`[Color class] @briklab/lib/color: Invalid hex! 
         Hint: You must pass a valid hex color string!
         Using black as fallback.`});
       }
@@ -180,7 +182,7 @@ export default class Color {
         this.a = vals[3] ?? 1;
       }
     } else {
-      warner.warn({message:`[Color class] @briklab/lib/color: Unknown color string "${str}"! 
+      colorWarner.warn({message:`[Color class] @briklab/lib/color: Unknown color string "${str}"! 
         Hint: The argument must be a valid color string!
         Using black as fallback.`});
     }

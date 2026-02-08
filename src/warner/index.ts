@@ -173,6 +173,22 @@ export default class Warner {
     return lines;
   }
 
+  #formatSummaryForBrowser() {
+    const count = this.#warnings.length;
+    const max = this.#options.maxWarnings;
+    const displayCount = max ? (count > max ? `${max}+` : String(count)) : String(count);
+    const msg = `${displayCount} warnings collected`;
+    const css = "background:#f9a825;color:#000;padding:4px 8px;border-radius:4px;font-weight:700;";
+    return [msg, css];
+  }
+
+  #formatSummaryForNode() {
+    const count = this.#warnings.length;
+    const max = this.#options.maxWarnings;
+    const displayCount = max ? (count > max ? `${max}+` : String(count)) : String(count);
+    return `${NODE_STYLES.bold}${NODE_STYLES.label}[SUMMARY]${NODE_STYLES.reset} ${displayCount} warnings collected${NODE_STYLES.reset}`;
+  }
+
   #formatForNode(w: Warning) {
     const parts: string[] = [];
     const t = w.tag ? `${NODE_STYLES.tag}[${w.tag}]${NODE_STYLES.reset} ` : w.source ? `${NODE_STYLES.tag}[${w.source}]${NODE_STYLES.reset} ` : "";
@@ -214,16 +230,26 @@ export default class Warner {
             try {
                 this.#options.onSummary?.(this.#warnings.length, [...this.#warnings]);
             } catch (e) {}
-            const count = this.#warnings.length;
-            const max = this.#options.maxWarnings;
             if (IS_BROWSER) {
-                console.log(`${max ? (count > max ? `${max}+` : String(count)) : String(count)} warnings collected`);
+                const [msg, css] = this.#formatSummaryForBrowser();
+                console.log(`%c${msg}`, css);
             } else {
-                console.log(`${count} warnings collected`);
+                console.log(this.#formatSummaryForNode());
             }
         }
     }
 }
-
-export const warner = new Warner({ level: "summary" });
-// TODO: complete this warner bro
+const getDefaultLevel = (): WarningLevel => {
+  if (typeof process !== "undefined" && process.env?.BRIKLAB_WARNING_LEVEL) {
+    const level = process.env.BRIKLAB_WARNING_LEVEL.toLowerCase();
+    if (["silent", "summary", "full"].includes(level)) return level as WarningLevel;
+  }
+  return "summary";
+};
+export const warner = new Warner({ level: getDefaultLevel() });
+export function createWarner(packageName: string, level?: WarningLevel): Warner {
+  return new Warner({
+    packageName,
+    level: level ?? getDefaultLevel(),
+  });
+}
