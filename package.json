@@ -14,8 +14,7 @@
   "markdown": "github",
   "type": "module",
   "scripts": {
-    "build": "tsc && pnpm minify",
-    "minify": "node build.js",
+    "build": "tsc",
     "test:smoke": "pnpm run build && node ./test-dist.js",
     "prepublishOnly": "pnpm run build"
   },
@@ -41,7 +40,7 @@
   "repository": {
     "url": "https://github.com/EkaanshPC/briklab-stdlib"
   },
-  "version": "1.1.10",
+  "version": "1.2.0-test",
   "devDependencies": {
     "@types/cssom": "^0.4.3",
     "@types/node": "^25.1.0",
